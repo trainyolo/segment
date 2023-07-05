@@ -32,6 +32,10 @@ class Engine:
         if config.save:
             os.makedirs(config.save_path, exist_ok=True)
 
+        # dump config
+        with open(os.path.join(config.save_path, 'config.yaml'), 'w') as f:
+            yaml.safe_dump(vars(config), f, sort_keys=False)
+
         # train/val dataloaders
         self.train_dataset_it, self.val_dataset_it = self.get_dataloaders(
             config, self.device

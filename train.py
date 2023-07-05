@@ -46,10 +46,6 @@ if __name__ == "__main__":
 
     config = parse_args()
 
-    # dump config
-    with open(os.path.join(config.save_path, 'config.yaml'), 'w') as f:
-        yaml.safe_dump(vars(config), f, sort_keys=False)
-
     # train model
     engine = Engine(config)
     engine.train()
