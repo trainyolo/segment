@@ -11,6 +11,8 @@ from utils.visualizer import SegmentationVisualizer
 from tqdm import tqdm
 import yaml
 from utils.logging import Logger
+import numpy as np
+from datetime import datetime
 
 
 class Engine:
@@ -30,6 +32,8 @@ class Engine:
 
         # create output dir
         if config.save:
+            save_path = os.path.join(config.save_path, 'train', datetime.now().strftime("%m-%d-%Y-%H:%M:%S"))
+            config.save_path = save_path
             os.makedirs(config.save_path, exist_ok=True)
 
         # dump config
@@ -97,10 +101,11 @@ class Engine:
 
     @staticmethod
     def get_model(config, device):
+        n = 1 if config.num_categories == 1 else config.num_categories + 1
         model = get_model(
             config.model,
             encoder_name=config.model_encoder,
-            classes=config.num_categories,
+            classes=n,
         ).to(device)
 
         # load checkpoint
@@ -187,8 +192,6 @@ class Engine:
         loss_meter = AverageMeter()
         iou_meter = IOUEvaluator(
             config.num_categories + 1
-            if config.num_categories == 1
-            else config.num_categories
         )
 
         self.model.eval()
@@ -211,11 +214,8 @@ class Engine:
                     iou_meter.addBatch(pred.argmax(dim=1, keepdim=True), labels)
 
         # get iou metric
-        miou, iou = iou_meter.getIoU()
-        if config.num_categories == 1:
-            metrics = {"miou": iou[1], "class_iou": iou[1:]}
-        else:
-            metrics = {"miou": miou, "class_iou": iou}
+        _, iou = iou_meter.getIoU()
+        metrics = {"miou": np.mean(iou[1:]), "class_iou": iou[1:]}
 
         return loss_meter.avg, metrics
 

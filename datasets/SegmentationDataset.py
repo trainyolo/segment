@@ -2,14 +2,14 @@ import os
 import random
 
 from torch.utils.data import Dataset
-import json
 import numpy as np
 
 from PIL import Image
 import random
 
-from utils.image_utils import load_image
 import yaml
+
+import cv2
 
 
 class SegmentationDataset(Dataset):
@@ -45,23 +45,23 @@ class SegmentationDataset(Dataset):
     def get_image(self, index):
         image_filename = self.data[index]
         image_path = os.path.join(self.location, image_filename)
-        image = load_image(image_path)
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
 
     def get_label(self, index):
-        label_filename = self.data[index].rsplit(".", 1)[0].replace('images', 'labels', 1) + ".png"
+        label_filename = (
+            self.data[index].rsplit(".", 1)[0].replace("images", "labels", 1) + ".png"
+        )
         label_path = os.path.join(self.location, label_filename)
         label = np.array(Image.open(label_path))
-
-        if len(self.dataset_info["names"]) > 1:
-            label = label - 1
 
         return label
 
     def __getitem__(self, index):
         index = self.get_index(index)
 
-        image = np.array(self.get_image(index))
+        image = self.get_image(index)
         label = self.get_label(index)
 
         if self.transform:

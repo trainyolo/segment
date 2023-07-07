@@ -14,7 +14,7 @@ def get_colors(n=256, float=False):
 
         colors.append([r, g, b])
 
-    colors = np.array(colors)
+    colors = np.array(colors, dtype=np.uint8)
     if float:
         colors = colors / 255
 

@@ -1,7 +1,5 @@
 from engine import Engine
 import argparse
-import os
-import yaml
 
 def parse_args():
     parser = argparse.ArgumentParser()
